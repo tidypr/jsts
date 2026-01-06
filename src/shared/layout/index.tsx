@@ -1,23 +1,26 @@
+'use client';
+
 import { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import BottomNavigator from './BottomNavigator';
 
-/**
- * AppLayout 컴포넌트
- *
- * 애플리케이션의 루트 레이아웃을 감싸는 컴포넌트입니다.
- * 전역 상태 관리, 공통 레이아웃 요소, 컨텍스트 프로바이더 등을
- * 포함할 수 있도록 설계되었습니다.
- * 하단 탭 네비게이터를 포함하여 주요 페이지 간 탐색을 제공합니다.
- *
- * @param {Object} props - 컴포넌트 props
- * @param {ReactNode} props.children - 자식 컴포넌트
- * @returns {JSX.Element} AppLayout 컴포넌트
- */
 export default function AppLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
+  // BottomNavigator를 숨길 경로들
+  const hideBottomNavigator =
+    pathname === '/' ||
+    pathname?.includes('onboarding') ||
+    pathname?.includes('auth');
+
   return (
-    <main className="flex min-h-screen flex-col">
-      <div className="flex-1">{children}</div>
-      <BottomNavigator />
+    <main className='mx-auto flex min-h-screen w-full flex-col items-center justify-center md:w-3/4'>
+      <div
+        className={`w-full px-2 ${hideBottomNavigator ? 'flex-1' : 'mb-16 flex-1'}`}
+      >
+        {children}
+      </div>
+      {!hideBottomNavigator && <BottomNavigator />}
     </main>
   );
 }
