@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  name      String?
+  email     String   @unique
+  image     String?
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  bio       String?
+
+  sessions  Session[]
+  points    Point[]    // Point 모델과의 관계 추가
+  subscriptions Subscription[] // 구독 이력 관리를 위해 1:N 관계 설정
+}
+
+model Session {
+  id          String   @id @default(uuid())
+  isAutomatic Boolean  @default(false)
+  category    String   
+  date        DateTime 
+  note        String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  segments    Segment[] // 세그먼트와의 관계
+}
+
+model Segment {
+  id          String   @id @default(uuid())
+  startTime   DateTime
+  endTime     DateTime
+  createdAt   DateTime @default(now())
+  
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Point {
+  id           String   @id @default(uuid())
+  amount       Int      
+  type         String   
+  description  String?  
+  createdAt    DateTime @default(now())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id           String   @id @default(uuid())
+  planName     String   
+  startDate    DateTime @default(now()) // 시작일
+  endDate      DateTime                 // 종료일 (만료일)
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
