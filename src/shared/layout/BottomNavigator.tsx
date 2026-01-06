@@ -20,11 +20,11 @@ interface TabItem {
  * 하단 탭 네비게이터 탭 목록
  */
 const TABS: TabItem[] = [
-  { label: 'Home', path: '/home', icon: Home },
-  { label: 'Stats', path: '/stats', icon: TrendingUp },
-  { label: 'Timer', path: '/timer', icon: Timer },
-  { label: 'Community', path: '/community', icon: Users },
-  { label: 'Profile', path: '/profile', icon: User },
+  { label: '홈', path: '/home', icon: Home },
+  { label: '통계', path: '/stats', icon: TrendingUp },
+  { label: '타이머', path: '/timer', icon: Timer },
+  { label: '소셜', path: '/social', icon: Users },
+  { label: '프로필', path: '/profile', icon: User },
 ];
 
 /**
@@ -62,7 +62,7 @@ export default function BottomNavigator(): JSX.Element {
 
   return (
     <nav
-      className='flex items-center justify-around border-t border-border px-4 py-3'
+      className='fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-border px-4 py-3 opacity-100'
       data-testid='bottom-navigator'
     >
       {TABS.map((tab) => {
@@ -80,12 +80,12 @@ export default function BottomNavigator(): JSX.Element {
           >
             <Icon
               className={`h-6 w-6 ${
-                active ? 'text-emerald-500' : 'text-muted-foreground'
+                active ? 'text-[#22c55e]' : 'text-muted-foreground'
               }`}
             />
             <span
               className={`text-xs font-medium ${
-                active ? 'text-emerald-500' : 'text-muted-foreground'
+                active ? 'text-[#22c55e]' : 'text-muted-foreground'
               }`}
             >
               {tab.label}

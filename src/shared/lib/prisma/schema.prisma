@@ -23,12 +23,12 @@ model User {
   updatedAt DateTime @updatedAt
   bio       String?
 
-  sessions  Session[]
-  points    Point[]    // Point 모델과의 관계 추가
-  subscriptions Subscription[] // 구독 이력 관리를 위해 1:N 관계 설정
+  phases  Phase[]
+  points    Point[]
+  subscriptions Subscription[]
 }
 
-model Session {
+model Phase {
   id          String   @id @default(uuid())
   isAutomatic Boolean  @default(false)
   category    String   
@@ -39,7 +39,7 @@ model Session {
 
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  segments    Segment[] // 세그먼트와의 관계
+  segments    Segment[]
 }
 
 model Segment {
@@ -48,8 +48,8 @@ model Segment {
   endTime     DateTime
   createdAt   DateTime @default(now())
   
-  sessionId   String
-  session     Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  phaseId   String
+  phase     Phase  @relation(fields: [phaseId], references: [id], onDelete: Cascade)
 }
 
 model Point {
@@ -65,8 +65,8 @@ model Point {
 model Subscription {
   id           String   @id @default(uuid())
   planName     String   
-  startDate    DateTime @default(now()) // 시작일
-  endDate      DateTime                 // 종료일 (만료일)
+  startDate    DateTime @default(now())
+  endDate      DateTime                
   status       String   @default("ACTIVE")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

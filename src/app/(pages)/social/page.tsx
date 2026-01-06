@@ -1,10 +1,9 @@
 import Tabs from '@/shared/components/commons/Tabs';
 
 const tabs = [
-  { id: 'daily', label: '일간' },
-  { id: 'weekly', label: '주간' },
-  { id: 'monthly', label: '월간' },
-  { id: 'yearly', label: '연간' },
+  { id: 'ranking', label: '랭킹' },
+  { id: 'feed', label: '피드' },
+  { id: 'friends', label: '친구' },
 ];
 
 export default function page() {

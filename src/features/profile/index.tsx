@@ -237,7 +237,7 @@ export default function Profile({
                 <li
                   key={index}
                   onClick={item.onClick}
-                  className='flex items-center gap-4 rounded-2xl bg-muted px-4 py-4 transition-colors hover:bg-muted/80'
+                  className='flex items-center gap-4 rounded-2xl  px-4 py-4 transition-colors hover:bg-muted/80'
                   data-testid={`menu-item-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
                   <div className='flex h-10 w-10 items-center justify-center'>
