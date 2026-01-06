@@ -2,7 +2,7 @@
 
 import { signIn, signOut } from '@/auth';
 import { prisma } from '@/shared/lib/prisma/prisma';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export async function googleLoginAction() {
   await signIn('google', { redirectTo: '/profile' });
