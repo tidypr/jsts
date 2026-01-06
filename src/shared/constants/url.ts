@@ -14,5 +14,5 @@ export const URL = {
   STATS: '/stats',
   TIMER: '/timer',
   PROFILE: '/profile',
-  SOSIAL: '/sosial',
+  SOCIAL: '/social',
 } as const;
