@@ -70,7 +70,7 @@ export const DEFAULT_PRESETS: GoalPreset[] = [
   },
 ];
 
-export default function TimerList({ userId, tab }: TimerProps) {
+export default function TimerList({ userId }: TimerProps) {
   const [goalPresets, setGoalPresets] = useState<GoalPreset[]>(DEFAULT_PRESETS);
   const [selectedPreset, setSelectedPreset] = useState<GoalPreset | null>(null);
   const [showTimer, setShowTimer] = useState(false);
