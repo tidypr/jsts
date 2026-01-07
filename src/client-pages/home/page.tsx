@@ -30,11 +30,11 @@ export default function Homepage({ userId }: HomepageProps) {
     const start = new Date(createdAt).getTime();
     const end = new Date(updatedAt).getTime();
     const diff = end - start;
-    
+
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    
+
     if (hours > 0) {
       return `${hours}시간 ${minutes}분`;
     } else if (minutes > 0) {

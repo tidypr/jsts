@@ -12,7 +12,11 @@ const tabs = [
   { id: 'friends', label: '친구' },
 ];
 
-export default function SocialPage({ session }: { session: any }) {
+export default function Social({
+  session,
+}: {
+  session: { user: { id: string } };
+}) {
   const [activeTab, setActiveTab] = useState(tabs[0].id);
 
   return (

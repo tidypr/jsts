@@ -1,9 +1,9 @@
 import { auth } from '@/auth';
-import SocialPage from '@/client-pages/social/page';
+import Social from '@/client-pages/social/page';
 
 import { redirect } from 'next/dist/client/components/navigation';
 
-export default async function page() {
+export default async function SocialPage() {
   const session = await auth();
 
   if (!session?.accessToken) {
@@ -12,7 +12,7 @@ export default async function page() {
 
   return (
     <>
-      <SocialPage session={session} />
+      <Social session={session} />
     </>
   );
 }
