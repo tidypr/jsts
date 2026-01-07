@@ -38,7 +38,7 @@ export async function getUserById(id: string) {
     const user = await prisma.user.findUnique({
       where: { id },
       include: {
-        sessions: {
+        phases: {
           orderBy: {
             date: 'desc',
           },
@@ -60,7 +60,7 @@ export async function getUserByEmail(email: string) {
     const user = await prisma.user.findUnique({
       where: { email },
       include: {
-        sessions: true,
+        phases: true,
       },
     });
     return { success: true, data: user };
@@ -78,7 +78,7 @@ export async function getAllUsers() {
     const users = await prisma.user.findMany({
       include: {
         _count: {
-          select: { sessions: true },
+          select: { phases: true },
         },
       },
       orderBy: {
