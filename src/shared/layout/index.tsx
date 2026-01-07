@@ -16,7 +16,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <main className='mx-auto flex min-h-screen w-full flex-col items-center justify-center md:w-3/4'>
       <div
-        className={`w-full px-2 ${hideBottomNavigator ? 'flex-1' : 'mb-16 flex-1'}`}
+        className={`w-full px-4 ${hideBottomNavigator ? 'flex-1' : 'mb-16 flex-1'}`}
       >
         {children}
       </div>
