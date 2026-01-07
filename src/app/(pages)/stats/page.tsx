@@ -1,16 +1,18 @@
-import Tabs from '@/shared/components/commons/Tabs';
+import { auth } from '@/auth';
+import StatsPage from '@/client-pages/stats/page';
 
-const tabs = [
-  { id: 'daily', label: '일간' },
-  { id: 'weekly', label: '주간' },
-  { id: 'monthly', label: '월간' },
-  { id: 'yearly', label: '연간' },
-];
+import { redirect } from 'next/dist/client/components/navigation';
 
-export default function page() {
+export default async function page() {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    redirect('/auth/login');
+  }
+
   return (
     <>
-      <Tabs tabs={tabs} />
+      <StatsPage />
     </>
   );
 }

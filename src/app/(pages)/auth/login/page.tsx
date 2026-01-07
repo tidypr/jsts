@@ -1,4 +1,4 @@
-import SigninPage from '@/features/auth/signin';
+import SigninPage from '@/client-pages/auth/login/page';
 
 export default async function page() {
   return (

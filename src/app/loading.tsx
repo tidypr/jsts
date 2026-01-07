@@ -1,7 +1,10 @@
-export default function loading() {
+export default function Loading() {
   return (
-    <>
-      <h1 className='min-h-screen bg-white'>loading</h1>
-    </>
+    <div className='flex min-h-screen items-center justify-center'>
+      <div className='flex flex-col items-center gap-4'>
+        <div className='h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600' />
+        <p className='text-sm text-gray-600'>잠시만 기다려 주세요...</p>
+      </div>
+    </div>
   );
 }

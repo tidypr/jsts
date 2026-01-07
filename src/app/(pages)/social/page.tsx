@@ -1,15 +1,18 @@
-import Tabs from '@/shared/components/commons/Tabs';
+import { auth } from '@/auth';
+import SocialPage from '@/client-pages/social/page';
 
-const tabs = [
-  { id: 'ranking', label: '랭킹' },
-  { id: 'feed', label: '피드' },
-  { id: 'friends', label: '친구' },
-];
+import { redirect } from 'next/dist/client/components/navigation';
 
-export default function page() {
+export default async function page() {
+  const session = await auth();
+
+  if (!session?.accessToken) {
+    redirect('/auth/login');
+  }
+
   return (
     <>
-      <Tabs tabs={tabs} />
+      <SocialPage session={session} />
     </>
   );
 }

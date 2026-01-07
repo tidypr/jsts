@@ -1,14 +1,17 @@
-import Tabs from '@/shared/components/commons/Tabs';
+import { auth } from '@/auth';
+import TimerPage from '@/client-pages/timer/page';
+import { redirect } from 'next/dist/client/components/navigation';
 
-const tabs = [
-  { id: 'general', label: '일반' },
-  { id: 'pomodoro', label: '포모도로' },
-];
+export default async function page() {
+  const session = await auth();
 
-export default function page() {
+  if (!session?.accessToken) {
+    redirect('/auth/login');
+  }
+
   return (
     <>
-      <Tabs tabs={tabs} />
+      <TimerPage userId={session.user.id} />
     </>
   );
 }
