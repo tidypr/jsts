@@ -24,9 +24,13 @@ export function useToggleLike() {
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // 피드 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['feed'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
     onError: (error: Error) => {
       console.error('좋아요 토글 실패:', error);

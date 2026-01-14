@@ -20,9 +20,13 @@ export function useDeleteFriend() {
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // 관련 쿼리 무효화 - 자동 리페치 트리거
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['friends'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
     onError: (error: Error) => {
       console.error('친구 삭제 실패:', error);

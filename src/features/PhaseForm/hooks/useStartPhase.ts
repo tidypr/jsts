@@ -34,9 +34,15 @@ export function useStartPhase() {
       }
       console.error('Phase 시작 실패 (롤백됨):', err);
     },
-    onSettled: () => {
+    onSettled: async () => {
       // 최종적으로 서버에서 최신 데이터 가져오기
-      queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['dailyPhases'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ queryKey: ['recentPhases'] });
     },
   });
 }

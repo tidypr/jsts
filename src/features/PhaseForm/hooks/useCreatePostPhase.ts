@@ -12,15 +12,16 @@ export function useCreatePostPhase(userId: string) {
       }
       return result.data;
     },
-    onSuccess: () => {
-      // 모든 dailyPhases 쿼리를 무효화 (날짜 상관없이)
-      queryClient.invalidateQueries({ 
+    onSuccess: async () => {
+      // 모든 dailyPhases 쿼리를 무효화하고 즉시 다시 가져오기
+      await queryClient.invalidateQueries({ 
         queryKey: ['dailyPhases'],
-        exact: false 
+        exact: false,
+        refetchType: 'all' // 모든 쿼리를 즉시 refetch
       });
-      queryClient.invalidateQueries({ queryKey: ['recentPhases', userId] });
-      queryClient.invalidateQueries({ queryKey: ['activityHeatmap', userId] });
-      queryClient.invalidateQueries({ queryKey: ['goal-progress'] });
+      await queryClient.invalidateQueries({ queryKey: ['recentPhases', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['activityHeatmap', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['goal-progress'] });
     },
   });
 }
@@ -40,15 +41,16 @@ export function useCreatePostPhaseWithTime(userId: string) {
       }
       return result.data;
     },
-    onSuccess: () => {
-      // 모든 dailyPhases 쿼리를 무효화 (날짜 상관없이)
-      queryClient.invalidateQueries({ 
+    onSuccess: async () => {
+      // 모든 dailyPhases 쿼리를 무효화하고 즉시 다시 가져오기
+      await queryClient.invalidateQueries({ 
         queryKey: ['dailyPhases'],
-        exact: false 
+        exact: false,
+        refetchType: 'all' // 모든 쿼리를 즉시 refetch
       });
-      queryClient.invalidateQueries({ queryKey: ['recentPhases', userId] });
-      queryClient.invalidateQueries({ queryKey: ['activityHeatmap', userId] });
-      queryClient.invalidateQueries({ queryKey: ['goal-progress'] });
+      await queryClient.invalidateQueries({ queryKey: ['recentPhases', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['activityHeatmap', userId] });
+      await queryClient.invalidateQueries({ queryKey: ['goal-progress'] });
     },
   });
 }

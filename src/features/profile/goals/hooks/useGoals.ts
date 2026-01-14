@@ -25,8 +25,17 @@ export function useUpsertGoal() {
       }
       return result.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['goals'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['goal-progress'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
   });
 }
@@ -42,8 +51,17 @@ export function useDeleteGoal() {
       }
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['goals'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['goal-progress'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
   });
 }

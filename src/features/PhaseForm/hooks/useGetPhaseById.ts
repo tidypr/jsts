@@ -21,5 +21,6 @@ export function useGetPhaseById(phaseId: string | null, enablePolling = false) {
     refetchIntervalInBackground: true, // 백그라운드 탭에서도 폴링 유지
     refetchOnMount: true,
     refetchOnWindowFocus: true,
+    staleTime: 0, // 항상 최신 데이터 가져오기
   });
 }

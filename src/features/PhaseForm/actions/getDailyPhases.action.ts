@@ -2,11 +2,13 @@
 
 import { auth } from '@/auth';
 import { prisma } from '@/shared/lib/prisma/prisma';
+import { unstable_noStore as noStore } from 'next/cache';
 
 /**
  * 특정 날짜의 Phase 기록 조회
  */
 export async function getDailyPhases(userId: string, date: Date) {
+  noStore(); // 캐싱 비활성화 - 항상 최신 데이터 가져오기
   try {
     const session = await auth();
 

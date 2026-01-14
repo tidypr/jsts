@@ -11,5 +11,7 @@ export function useDailyPhases(userId: string, date: Date) {
       }
       return result.data;
     },
+    staleTime: 0, // 항상 최신 데이터 가져오기
+    refetchOnMount: true, // 컴포넌트 마운트 시 데이터 다시 가져오기
   });
 }

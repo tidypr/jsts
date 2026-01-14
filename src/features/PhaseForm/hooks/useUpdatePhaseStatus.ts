@@ -53,10 +53,16 @@ export function useUpdatePhaseStatus() {
       }
       console.error('Phase 상태 업데이트 실패 (롤백됨):', err);
     },
-    onSettled: (data, error, variables) => {
+    onSettled: async (data, error, variables) => {
       // 최종 동기화
-      queryClient.invalidateQueries({ queryKey: ['phase', variables.phaseId] });
-      queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ queryKey: ['phase', variables.phaseId] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['dailyPhases'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ queryKey: ['recentPhases'] });
     },
   });
 }

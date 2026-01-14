@@ -86,8 +86,12 @@ export function useCreateActivityTemplate(userId: string) {
         );
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['activityTemplates', userId] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['activityTemplates'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
   });
 }
@@ -145,8 +149,12 @@ export function useUpdateActivityTemplate(userId: string) {
         );
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['activityTemplates', userId] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['activityTemplates'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
   });
 }
@@ -189,8 +197,12 @@ export function useDeleteActivityTemplate(userId: string) {
         );
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['activityTemplates', userId] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ 
+        queryKey: ['activityTemplates'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
   });
 }

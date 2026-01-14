@@ -21,9 +21,16 @@ export function useCreateBackdatedPhase() {
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // 관련 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['dailyPhases'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ queryKey: ['recentPhases'] });
+      await queryClient.invalidateQueries({ queryKey: ['activityHeatmap'] });
       toast.success('기록이 추가되었습니다');
     },
     onError: (error: Error) => {
@@ -47,9 +54,16 @@ export function useCreateBackdatedPhaseInRange() {
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // 관련 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['dailyPhases'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ queryKey: ['phases'] });
+      await queryClient.invalidateQueries({ queryKey: ['recentPhases'] });
+      await queryClient.invalidateQueries({ queryKey: ['activityHeatmap'] });
       toast.success('기록이 추가되었습니다');
     },
     onError: (error: Error) => {

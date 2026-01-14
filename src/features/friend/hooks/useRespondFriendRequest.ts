@@ -20,10 +20,18 @@ export function useRespondFriendRequest() {
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // 관련 쿼리 무효화 - 자동 리페치 트리거
-      queryClient.invalidateQueries({ queryKey: ['friends'] });
-      queryClient.invalidateQueries({ queryKey: ['friendRequests'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['friends'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['friendRequests'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
     onError: (error: Error) => {
       console.error('친구 요청 응답 실패:', error);

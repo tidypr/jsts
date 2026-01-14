@@ -11,7 +11,7 @@ type ActionResult<T> =
 
 export async function createPhaseAction(
   rawData: CreatePhaseInput,
-): Promise<ActionResult<{ id: string }>> {
+): Promise<ActionResult<{ id: string; userId: string }>> {
   try {
     // Validation - server side
     const validData = createPhaseInputSchema.parse(rawData);
@@ -53,8 +53,9 @@ export async function createPhaseAction(
     revalidatePath('/timer');
     revalidatePath('/stats');
     revalidatePath('/home');
+    revalidatePath('/record');
 
-    return { success: true, data: { id: newPhase.id } };
+    return { success: true, data: { id: newPhase.id, userId: validData.userId } };
   } catch (error) {
     if (error instanceof z.ZodError) {
       return {

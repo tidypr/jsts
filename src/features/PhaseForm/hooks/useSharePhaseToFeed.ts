@@ -18,9 +18,13 @@ export function useSharePhaseToFeed() {
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // 성공 시 feed 쿼리 무효화하여 새로고침
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['feed'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
     onError: (error: Error) => {
       console.error('Feed 공유 실패:', error);

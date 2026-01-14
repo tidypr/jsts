@@ -20,10 +20,18 @@ export function useCreatePost() {
 
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       // 관련 쿼리 무효화 - 자동 리페치 트리거
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['feed'],
+        exact: false,
+        refetchType: 'all'
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['posts'],
+        exact: false,
+        refetchType: 'all'
+      });
     },
     onError: (error: Error) => {
       console.error('게시물 생성 실패:', error);
