@@ -9,7 +9,7 @@ import { Input } from '@/shared/components/ui/input';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { LucideEye, LucideEyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { signInWithEmail } from '../api';
+import { signInWithEmail, signInAsGuest } from '../api';
 import { signinSchema } from '../auth.schemas';
 import { URL } from '@/shared/constants/url';
 import GoogleLoginBtn from './GoogleLoginBtn';
@@ -32,8 +32,6 @@ export default function SigninPage() {
     mode: 'onBlur',
   });
 
-  console.log('현재 검증 에러:', errors);
-
   const onSubmit = async (data: SigninFormData) => {
     console.log('로그인 시도:', data.email);
     setIsLoading(true);
@@ -44,7 +42,7 @@ export default function SigninPage() {
 
     if (result.success) {
       console.log('로그인 성공, /stats로 이동');
-      router.push(URL.STATS);
+      router.push(URL.HOME);
     } else {
       console.log('로그인 실패:', result.error);
       setErrorMessage(result.error?.message || '로그인에 실패했습니다.');
@@ -58,6 +56,24 @@ export default function SigninPage() {
     handleSubmit(onSubmit)(e);
   };
 
+  const handleGuestLogin = async () => {
+    console.log('게스트 로그인 시도');
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    const result = await signInAsGuest();
+
+    if (result.success) {
+      console.log('게스트 로그인 성공, /home으로 이동');
+      router.push(URL.HOME);
+    } else {
+      console.log('게스트 로그인 실패:', result.error);
+      setErrorMessage(result.error?.message || '게스트 로그인에 실패했습니다.');
+    }
+
+    setIsLoading(false);
+  };
+
   return (
     <div className='flex min-h-screen flex-col items-center justify-center bg-background'>
       <div className='w-full rounded-2xl border border-zinc-800 bg-background p-8 shadow-md sm:w-96'>
@@ -68,7 +84,7 @@ export default function SigninPage() {
               다시 오신 것을 환영합니다!
             </h1>
             <p className='mb-8 text-muted-foreground'>
-              학습 목표를 향해 달려볼까요?
+              목표를 향해 달려볼까요?
             </p>
 
             {/* Error Message */}
@@ -195,11 +211,12 @@ export default function SigninPage() {
           {/* Continue as Guest */}
           <button
             type='button'
-            onClick={() => router.push(URL.STATS)}
-            className='mt-6 text-sm text-muted-foreground underline'
+            onClick={handleGuestLogin}
+            disabled={isLoading}
+            className='mt-6 text-sm text-muted-foreground underline disabled:opacity-50'
             data-testid='guest-button'
           >
-            게스트로 계속하기
+            {isLoading ? '게스트 로그인 중...' : '게스트로 계속하기'}
           </button>
         </div>
       </div>

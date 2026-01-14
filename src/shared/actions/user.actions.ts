@@ -32,6 +32,37 @@ export async function createUser(data: {
   }
 }
 
+// Create Guest User
+export async function createGuestUser() {
+  try {
+    // 게스트 유저 수를 카운트하여 다음 번호 생성
+    const guestCount = await prisma.user.count({
+      where: { isGuest: true },
+    });
+
+    const guestNumber = String(guestCount + 1).padStart(3, '0'); // 001, 002, ...
+    const timestamp = Date.now();
+    const email = `GUEST_${guestNumber}@${timestamp}.com`;
+    const name = `게스트 ${guestNumber}`;
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        name,
+        isGuest: true,
+      },
+    });
+
+    revalidatePath('/');
+    return { success: true, data: user };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create guest user',
+    };
+  }
+}
+
 // Get User by ID
 export async function getUserById(id: string) {
   try {
@@ -40,7 +71,7 @@ export async function getUserById(id: string) {
       include: {
         phases: {
           orderBy: {
-            date: 'desc',
+            createdAt: 'desc',
           },
         },
       },
@@ -156,14 +187,17 @@ export async function checkEmailExists(email: string) {
 export async function getCurrentUserProfile() {
   try {
     const session = await auth();
+    console.log('🔍 getCurrentUserProfile - session:', JSON.stringify(session, null, 2));
 
     if (!session?.user?.email) {
+      console.log('❌ getCurrentUserProfile - No session or email');
       return {
         success: false,
         error: 'Not authenticated',
       };
     }
 
+    console.log('🔍 Looking up user with email:', session.user.email);
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
@@ -174,18 +208,39 @@ export async function getCurrentUserProfile() {
         bio: true,
         createdAt: true,
         updatedAt: true,
+        points: {
+          select: {
+            amount: true,
+          },
+        },
       },
     });
 
+    console.log('🔍 User found:', user ? 'YES' : 'NO');
+    if (user) {
+      console.log('✅ User data:', { id: user.id, email: user.email, name: user.name });
+    }
+
     if (!user) {
+      console.log('❌ getCurrentUserProfile - User not found in DB');
       return {
         success: false,
         error: 'User not found',
       };
     }
 
-    return { success: true, data: user };
+    // totalPoints 계산 (Point 테이블에서 합산)
+    const totalPoints = user.points.reduce((sum, point) => sum + point.amount, 0);
+
+    return {
+      success: true,
+      data: {
+        ...user,
+        totalPoints,
+      },
+    };
   } catch (error) {
+    console.error('❌ getCurrentUserProfile - Error:', error);
     return {
       success: false,
       error:

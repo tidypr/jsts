@@ -1,11 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "./generated/prisma"
 }
 
@@ -14,62 +8,228 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  name      String?
-  email     String   @unique
-  image     String?
-  password  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  bio       String?
-
-  phases  Phase[]
-  points    Point[]
-  subscriptions Subscription[]
+  id                 String             @id @default(uuid())
+  name               String?
+  email              String             @unique
+  image              String?
+  password           String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  bio                String?
+  isGuest            Boolean            @default(false)
+  comments           Comment[]
+  goals              Goal[]
+  likes              Like[]
+  phases             Phase[]
+  points             Point[]
+  posts              Post[]
+  subscriptions      Subscription[]
+  activityTemplates  ActivityTemplate[]
+  badges             UserBadge[]
 }
 
 model Phase {
-  id          String   @id @default(uuid())
-  isAutomatic Boolean  @default(false)
-  category    String   
-  date        DateTime 
-  note        String?  @db.Text
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                   String            @id @default(uuid())
+  isAutomatic          Boolean           @default(false)
+  activityTemplateId   String?
+  color                String?
+  emoji                String?
+  title                String?
+  note                 String            @db.Text
+  startTime            DateTime?
+  endTime              DateTime?
+  status               PhaseStatus       @default(STARTED)
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  userId               String
+  
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityTemplate     ActivityTemplate? @relation(fields: [activityTemplateId], references: [id], onDelete: SetNull)
+  segments             Segment[]
 
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  // segments    Segment[]
+  @@index([userId, createdAt])
+  @@index([activityTemplateId])
 }
 
-// model Segment {
-//   id          String   @id @default(uuid())
-//   startTime   DateTime
-//   endTime     DateTime
-//   createdAt   DateTime @default(now())
-  
-//   phaseId   String
-//   phase     Phase  @relation(fields: [phaseId], references: [id], onDelete: Cascade)
-// }
+model Segment {
+  id        String    @id @default(uuid())
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  phaseId   String
+  phase     Phase     @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+}
 
 model Point {
-  id           String   @id @default(uuid())
-  amount       Int      
-  type         String   
-  description  String?  
-  createdAt    DateTime @default(now())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String    @id @default(uuid())
+  amount      Int
+  description String?
+  createdAt   DateTime  @default(now())
+  userId      String
+  type        PointType
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model Subscription {
-  id           String   @id @default(uuid())
-  planName     String   
-  startDate    DateTime @default(now())
-  endDate      DateTime                
-  status       String   @default("ACTIVE")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String             @id @default(uuid())
+  startDate DateTime           @default(now())
+  endDate   DateTime?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  userId    String
+  plan      SubscriptionPlan   @default(FREE)
+  status    SubscriptionStatus @default(ACTIVE)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+model UserBadge {
+  id        String    @id @default(uuid())
+  badgeType BadgeType
+  earnedAt  DateTime  @default(now())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeType])
+  @@index([userId])
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  title     String
+  content   String    @db.Text
+  image     String?
+  views     Int       @default(0)
+  phaseId   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String
+  
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comments  Comment[]
+  likes     Like[]
+  tags      PostTag[]
+
+  @@index([userId, createdAt])
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  posts     PostTag[]
+}
+
+model PostTag {
+  id        String   @id @default(uuid())
+  postId    String
+  tagId     String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, tagId])
+  @@index([postId])
+  @@index([tagId])
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([userId])
+}
+
+model Goal {
+  id            String   @id @default(uuid())
+  type          GoalType
+  targetMinutes Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+}
+
+model ActivityTemplate {
+  id          String   @id @default(uuid())
+  title       String
+  note        String?  @db.Text
+  color       String
+  emoji       String?
+  defaultTime Int
+  useInTimer  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phases      Phase[]
+
+  @@index([userId])
+  @@index([userId, useInTimer])
+}
+
+enum PhaseStatus {
+  STARTED
+  PAUSED
+  COMPLETED
+}
+
+enum GoalType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+  MAX
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum BadgeType {
+  BADGE1
+  BADGE2
+  BADGE3
+}
+
+enum PointType {
+  PHASE_COMPLETE
+  DAILY_GOAL
+  WEEKLY_GOAL
+  MONTHLY_GOAL
+  BADGE_EARNED
+  POST_LIKE
+  REFERRAL
 }

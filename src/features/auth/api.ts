@@ -113,6 +113,59 @@ export async function signInWithSocial(provider: SocialProvider): Promise<{
 }
 
 /**
+ * 게스트로 로그인
+ *
+ * @returns 성공 여부와 에러 정보
+ */
+export async function signInAsGuest(): Promise<{
+  success: boolean;
+  error?: AuthError;
+}> {
+  try {
+    const response = await fetch('/api/auth/guest', {
+      method: 'POST',
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: {
+          message: result.error || '게스트 로그인 중 오류가 발생했습니다.',
+        },
+      };
+    }
+
+    // 게스트 User 생성 후 자동 로그인
+    const signInResult = await signIn('credentials', {
+      redirect: false,
+      email: result.data.email,
+      password: 'guest', // 게스트는 비밀번호가 없지만 signIn 호출을 위해 더미 값 사용
+    });
+
+    if (signInResult?.error) {
+      return {
+        success: false,
+        error: {
+          message: '게스트 로그인 중 오류가 발생했습니다.',
+        },
+      };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Unexpected error during signInAsGuest:', error);
+    return {
+      success: false,
+      error: {
+        message: '게스트 로그인 중 오류가 발생했습니다.',
+      },
+    };
+  }
+}
+
+/**
  * 로그아웃
  *
  * @returns 성공 여부와 에러 정보

@@ -1,21 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog';
+import CustomModal from '@/shared/components/commons/CustomModal';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { GoalPreset, ActivityCategory } from './index';
+import { GoalPreset } from './index';
+import { Badge } from '@/shared/components/ui/badge';
 
 interface AddTimerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (preset: GoalPreset) => void;
+  onAdd: (preset: Omit<GoalPreset, 'id'>) => void;
 }
 
 const COLORS = [
@@ -29,28 +25,18 @@ const COLORS = [
   '#f97316', // orange-600
 ];
 
-const CATEGORIES: { value: ActivityCategory; label: string }[] = [
-  { value: 'study', label: '공부' },
-  { value: 'work', label: '업무' },
-  { value: 'exercise', label: '운동' },
-  { value: 'reading', label: '독서' },
-  { value: 'coding', label: '코딩' },
-  { value: 'meeting', label: '회의' },
-  { value: 'project', label: '프로젝트' },
-  { value: 'other', label: '기타' },
-];
-
 export default function AddTimerDialog({
   open,
   onOpenChange,
   onAdd,
 }: AddTimerDialogProps) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<ActivityCategory>('study');
+  const [note, setNote] = useState('');
   const [color, setColor] = useState(COLORS[0]);
   const [hours, setHours] = useState('0');
   const [minutes, setMinutes] = useState('25');
   const [seconds, setSeconds] = useState('0');
+  const [useInTimer, setUseInTimer] = useState(true);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,62 +50,71 @@ export default function AddTimerDialog({
       return;
     }
 
-    const newPreset: GoalPreset = {
-      id: Date.now().toString(),
+    const newPreset = {
       title: title.trim(),
-      category,
+      note: note.trim() || undefined,
       color,
       defaultTime: totalSeconds,
+      useInTimer,
     };
 
     onAdd(newPreset);
 
     // Reset form
     setTitle('');
-    setCategory('study');
+    setNote('');
+
     setColor(COLORS[0]);
     setHours('0');
     setMinutes('25');
     setSeconds('0');
+    setUseInTimer(true);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] w-[calc(100vw-2rem)] max-w-md overflow-hidden rounded-2xl border-[#1f1f1f] sm:max-w-lg'>
-        <DialogHeader>
-          <DialogTitle>새 타이머 추가</DialogTitle>
-        </DialogHeader>
+    <CustomModal isOpen={open}>
+      <div className='overflow-hidden rounded-2xl bg-background sm:max-w-lg'>
+        <h2 className='mb-4 text-xl font-semibold'>새 타이머 추가</h2>
+        <h3 className='mb-4 text-lg font-semibold'>미리보기</h3>
+        <div className='flex items-center gap-2 rounded-lg bg-muted p-3'>
+          {/* <div className='flex-1'> */}
+          <Badge
+            className='mb-1 flex h-6 w-fit items-center justify-center rounded-lg text-sm'
+            style={{ backgroundColor: color + '20', color: color }}
+          >
+            {title || '제목 없음'}
+          </Badge>{' '}
+          {note && <div className='text-xs text-muted-foreground'>{note}</div>}
+          {/* </div> */}
+        </div>
         <form
           onSubmit={handleSubmit}
-          className='max-h-[calc(90vh-8rem)] space-y-4 overflow-y-auto px-4'
+          // className=''
+          className='flex max-h-[calc(90vh-8rem)] flex-col gap-4 space-y-4 overflow-y-auto p-2'
         >
+          {/* <div className='pr-2'> */}
           {/* Title */}
           <div className='space-y-2'>
-            <Label htmlFor='title'>제목</Label>
+            <Label htmlFor='title'>항목</Label>
             <Input
               id='title'
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder='예: 수학 문제 풀이'
-              className='border-[#1f1f1f] bg-[#0a0a0a]'
+              className='bg-muted'
             />
           </div>
 
-          {/* Category */}
+          {/* Note */}
           <div className='space-y-2'>
-            <Label htmlFor='category'>카테고리</Label>
-            <select
-              id='category'
-              value={category}
-              onChange={(e) => setCategory(e.target.value as ActivityCategory)}
-              className='flex h-10 w-full rounded-md border border-[#1f1f1f] bg-[#0a0a0a] px-3 py-2 text-base'
-            >
-              {CATEGORIES.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor='note'>메모 (선택사항)</Label>
+            <Input
+              id='note'
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder='예: 미적분 1장 문제 풀기'
+              className='bg-muted'
+            />
           </div>
 
           {/* Color */}
@@ -154,7 +149,7 @@ export default function AddTimerDialog({
                   value={hours}
                   onChange={(e) => setHours(e.target.value)}
                   placeholder='시'
-                  className='border-[#1f1f1f] bg-[#0a0a0a]'
+                  className='bg-muted'
                 />
               </div>
               <div className='flex-1'>
@@ -165,7 +160,7 @@ export default function AddTimerDialog({
                   value={minutes}
                   onChange={(e) => setMinutes(e.target.value)}
                   placeholder='분'
-                  className='border-[#1f1f1f] bg-[#0a0a0a]'
+                  className='bg-muted'
                 />
               </div>
               <div className='flex-1'>
@@ -176,10 +171,24 @@ export default function AddTimerDialog({
                   value={seconds}
                   onChange={(e) => setSeconds(e.target.value)}
                   placeholder='초'
-                  className='border-[#1f1f1f] bg-[#0a0a0a]'
+                  className='bg-muted'
                 />
               </div>
             </div>
+          </div>
+
+          {/* Use in Timer */}
+          <div className='flex items-center gap-2'>
+            <input
+              type='checkbox'
+              id='useInTimer'
+              checked={useInTimer}
+              onChange={(e) => setUseInTimer(e.target.checked)}
+              className='h-4 w-4 rounded border-gray-300'
+            />
+            <Label htmlFor='useInTimer' className='cursor-pointer'>
+              타이머 목록에 표시
+            </Label>
           </div>
 
           {/* Submit */}
@@ -199,8 +208,9 @@ export default function AddTimerDialog({
               추가
             </Button>
           </div>
+          {/* </div> */}
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </CustomModal>
   );
 }

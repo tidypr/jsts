@@ -1,5 +1,5 @@
-import SignupPage from '@/features/auth/signup';
+import SignupPage from './SignupPage';
 
-export default function Page() {
+export default function Register() {
   return <SignupPage />;
 }

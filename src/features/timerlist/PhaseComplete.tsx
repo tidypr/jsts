@@ -1,31 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/shared/components/ui/button';
 import { Card } from '@/shared/components/ui/card';
-import { TimerIcon, TrendingUp, Zap } from 'lucide-react';
+import { TimerIcon, Zap, Share2, Calendar } from 'lucide-react';
 
-// import { createSession } from '@/shared/actions/session.action';
 import CheckCircle from './CheckCircle';
-import { useCreatePhase } from '../PhaseForm/hooks/useCreatePhase';
+import { useSharePhaseToFeed } from '../PhaseForm/hooks/useSharePhaseToFeed';
 import CountDown from './CountDown';
+import { toast } from 'sonner';
+import { getAttendanceStreakAction } from '../PhaseForm/actions/getAttendanceStreak.action';
 
 interface TimerCompleteProps {
   completedTime: number;
   onConfirm: () => void;
   userId: string;
   color?: string;
+  phaseId: string | null;
+  category?: string;
 }
 
 export default function PhaseComplete({
   completedTime,
   onConfirm,
   userId,
-  color = '#22c55e',
+  phaseId,
+  category = '집중 활동',
 }: TimerCompleteProps) {
-  const { mutate: createPhase, isPending } = useCreatePhase();
-  const [category] = useState<string>(color);
+  const { mutate: shareToFeed, isPending: isSharing } = useSharePhaseToFeed();
   const [note] = useState<string>('');
+  const [isShared, setIsShared] = useState<boolean>(false);
+  const [attendanceStreak, setAttendanceStreak] = useState<number>(0);
+
+  // 출석 연속일수 가져오기
+  useEffect(() => {
+    const fetchAttendanceStreak = async () => {
+      const result = await getAttendanceStreakAction(userId);
+      if (result.success) {
+        setAttendanceStreak(result.data);
+      }
+    };
+
+    fetchAttendanceStreak();
+  }, [userId]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -39,31 +56,35 @@ export default function PhaseComplete({
   };
 
   const handleConfirm = () => {
-    if (!userId) {
+    // Phase는 이미 타이머 완료 시 자동 저장되었으므로 바로 타이머 목록으로 이동
+    onConfirm();
+  };
+
+  const handleShareToFeed = () => {
+    if (!userId || !phaseId) {
+      console.error('userId 또는 phaseId가 없습니다');
       return;
     }
 
-    const now = new Date();
-    const endTime = now;
-    const startTime = new Date(now.getTime() - completedTime * 1000);
-
-    const sessionData = {
-      userId,
-      category,
-      date: now,
-      startTime,
-      endTime,
-      note,
-    };
-
-    createPhase(sessionData, {
-      onSuccess: () => {
-        onConfirm();
+    shareToFeed(
+      {
+        userId,
+        phaseId,
+        category,
+        completedTime,
+        note: note || undefined,
       },
-      onError: () => {
-        // Handle error silently or show user feedback
+      {
+        onSuccess: () => {
+          setIsShared(true);
+          toast.success('피드에 공유되었습니다! 🎉');
+        },
+        onError: (error) => {
+          console.error('Feed 공유 실패:', error);
+          toast.error('피드 공유 중 오류가 발생했습니다.');
+        },
       },
-    });
+    );
   };
 
   return (
@@ -109,38 +130,64 @@ export default function PhaseComplete({
                 <p className='text-xs text-muted-foreground'>경험치 보상</p>
               </div>
             </div>
-            <div className='text-xl font-bold text-[#22c55e]'>150 포인트</div>
+            <div className='text-xl font-bold text-[#22c55e]'>{`${Math.trunc(completedTime / 60)} 포인트`}</div>
           </div>
         </Card>
 
-        <Card className='border-[#1f1f1f] p-4'>
+        <Card className='p-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
               <div className='flex h-10 w-10 items-center justify-center rounded-full bg-[#22c55e]/20'>
-                <TrendingUp className='h-5 w-5 text-[#22c55e]' />
+                <Calendar className='h-5 w-5 text-[#22c55e]' />
               </div>
               <div>
                 <p className='text-sm font-medium'>출석 체크</p>
                 <p className='text-xs text-muted-foreground'>연속 출석 달성</p>
               </div>
             </div>
-            <div className='text-xl font-bold text-[#22c55e]'>365 일</div>
+            <div className='text-xl font-bold text-[#22c55e]'>
+              {attendanceStreak} 일
+            </div>
           </div>
         </Card>
       </div>
 
-      {/* Confirm Button */}
-      <div>
+      {/* Action Buttons */}
+      <div className='space-y-3'>
+        {/* Share Button */}
         <Button
-          onClick={handleConfirm}
-          disabled={isPending}
-          className='w-full bg-[#22c55e] py-6 text-lg font-semibold text-black hover:bg-[#22c55e]/90 disabled:opacity-50'
+          onClick={handleShareToFeed}
+          disabled={isSharing || isShared}
+          className='w-full border-[#22c55e] bg-transparent py-6 text-lg font-semibold text-[#22c55e] hover:bg-[#22c55e]/10 disabled:opacity-50'
+          variant='outline'
         >
-          {isPending ? '저장 중...' : '저장'}
+          {isSharing ? (
+            '공유 중...'
+          ) : isShared ? (
+            <>
+              <Share2 className='mr-2 h-5 w-5' />
+              공유 완료 ✓
+            </>
+          ) : (
+            <>
+              <Share2 className='mr-2 h-5 w-5' />
+              피드에 기록하기
+            </>
+          )}
         </Button>
-        <span className='flex justify-end py-2 text-end text-sm text-muted-foreground'>
-          <CountDown handleConfirm={handleConfirm} />
-        </span>
+
+        {/* Confirm Button */}
+        <div>
+          <Button
+            onClick={handleConfirm}
+            className='w-full bg-[#22c55e] py-6 text-lg font-semibold text-black hover:bg-[#22c55e]/90'
+          >
+            확인
+          </Button>
+          <span className='flex justify-end py-2 text-end text-sm text-muted-foreground'>
+            <CountDown handleConfirm={handleConfirm} />
+          </span>
+        </div>
       </div>
     </div>
   );

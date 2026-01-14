@@ -1,0 +1,17 @@
+# Prisma generated files
+src/shared/lib/prisma/generated/
+
+# Build output
+.next/
+out/
+build/
+
+# Dependencies
+node_modules/
+
+# Testing
+coverage/
+
+# Misc
+.DS_Store
+*.log

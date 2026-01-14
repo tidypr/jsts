@@ -1,28 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Timer from '../timer';
+import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/shared/components/ui/button';
-import { Play, X } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from '@/shared/components/ui/dialog';
+import { Play, X, StickyNote } from 'lucide-react';
 
 import TimeAddBtn from './TimeAddBtn';
 import AddTimerDialog from './AddTimerDialog';
-
-export type ActivityCategory =
-  | 'study'
-  | 'work'
-  | 'exercise'
-  | 'reading'
-  | 'coding'
-  | 'meeting'
-  | 'project'
-  | 'other';
+import { startPhaseAction } from '@/features/PhaseForm/actions/startPhase.action';
+import {
+  useTimerTemplates,
+  useCreateActivityTemplate,
+  useUpdateActivityTemplate,
+  useDeleteActivityTemplate,
+} from './hooks/useActivityTemplates';
+import type { ActivityTemplate } from '@/features/activityTemplate/activityTemplate.schema';
 
 interface TimerProps {
   userId: string;
@@ -32,78 +24,40 @@ interface TimerProps {
 export interface GoalPreset {
   id: string;
   title: string;
-  category: ActivityCategory;
+  note?: string;
+  emoji?: string;
   color: string;
   defaultTime: number; // 초 단위
+  useInTimer?: boolean;
 }
 
-const STORAGE_KEY = 'timer-goal-presets';
-
-export const DEFAULT_PRESETS: GoalPreset[] = [
-  {
-    id: '1',
-    title: '수학 문제 풀이',
-    category: 'study',
-    color: '#22c55e',
-    defaultTime: 1500, // 25분
-  },
-  {
-    id: '2',
-    title: '코딩 연습',
-    category: 'coding',
-    color: '#3b82f6',
-    defaultTime: 3600, // 60분
-  },
-  {
-    id: '3',
-    title: '독서',
-    category: 'reading',
-    color: '#f59e0b',
-    defaultTime: 1800, // 30분
-  },
-  {
-    id: '4',
-    title: 'tset',
-    category: 'reading',
-    color: '#fe498a',
-    defaultTime: 5, // 30분
-  },
-];
-
 export default function TimerList({ userId }: TimerProps) {
-  const [goalPresets, setGoalPresets] = useState<GoalPreset[]>(DEFAULT_PRESETS);
-  const [selectedPreset, setSelectedPreset] = useState<GoalPreset | null>(null);
-  const [showTimer, setShowTimer] = useState(false);
+  const router = useRouter();
+  const { data: goalPresets, isLoading } = useTimerTemplates(userId);
+  const createMutation = useCreateActivityTemplate(userId);
+  const updateMutation = useUpdateActivityTemplate(userId);
+  const deleteMutation = useDeleteActivityTemplate(userId);
+
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
+    null,
+  );
+  const [timeInput, setTimeInput] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const isEdit = false;
 
-  const handleAddPreset = (preset: GoalPreset) => {
-    setGoalPresets((prev) => [...prev, preset]);
+  const handleAddPreset = (preset: Omit<GoalPreset, 'id'>) => {
+    createMutation.mutate({
+      ...preset,
+      useInTimer: preset.useInTimer ?? true,
+    });
     setShowAddDialog(false);
   };
 
   const handleDeletePreset = (id: string) => {
-    setGoalPresets((prev) => prev.filter((preset) => preset.id !== id));
+    deleteMutation.mutate(id);
   };
-
-  // 로컬스토리지에서 프리셋 불러오기
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsedPresets = JSON.parse(stored);
-        setGoalPresets(parsedPresets);
-      } catch (e) {
-        console.error('Failed to parse presets from localStorage', e);
-      }
-    }
-  }, []);
-
-  // 프리셋 변경 시 로컬스토리지에 저장
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(goalPresets));
-  }, [goalPresets]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -116,34 +70,132 @@ export default function TimerList({ userId }: TimerProps) {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const handlePlayClick = (preset: GoalPreset) => {
-    setSelectedPreset(preset);
-    setShowTimer(true);
+  const parseTimeInput = (input: string): number => {
+    // 숫자가 아닌 문자 제거
+    const numericInput = input.replace(/\D/g, '');
+    if (!numericInput) return 0;
+
+    const len = numericInput.length;
+
+    // 1-2자리: 분으로 해석
+    if (len <= 2) {
+      const minutes = parseInt(numericInput, 10);
+      return minutes * 60;
+    }
+    // 3-4자리: 마지막 2자리는 초, 나머지는 분
+    else if (len <= 4) {
+      const minutes = parseInt(numericInput.slice(0, -2), 10);
+      const seconds = parseInt(numericInput.slice(-2), 10);
+      return minutes * 60 + seconds;
+    }
+    // 5-6자리: 마지막 2자리는 초, 중간 2자리는 분, 나머지는 시간
+    else {
+      const hours = parseInt(numericInput.slice(0, -4), 10);
+      const minutes = parseInt(numericInput.slice(-4, -2), 10);
+      const seconds = parseInt(numericInput.slice(-2), 10);
+      return hours * 3600 + minutes * 60 + seconds;
+    }
   };
+
+  const formatInputAsTime = (input: string): string => {
+    const numericInput = input.replace(/\D/g, '');
+    if (!numericInput) return '';
+
+    const len = numericInput.length;
+
+    // 1-2자리: MM (분)
+    if (len <= 2) {
+      return numericInput;
+    }
+    // 3-4자리: MM:SS (분:초)
+    else if (len <= 4) {
+      const minutes = numericInput.slice(0, -2);
+      const seconds = numericInput.slice(-2);
+      return `${minutes}:${seconds}`;
+    }
+    // 5-6자리: HH:MM:SS (시:분:초)
+    else {
+      const hours = numericInput.slice(0, -4);
+      const minutes = numericInput.slice(-4, -2);
+      const seconds = numericInput.slice(-2);
+      return `${hours}:${minutes}:${seconds}`;
+    }
+  };
+
+  const handlePlayClick = async (preset: ActivityTemplate) => {
+    try {
+      const result = await startPhaseAction({
+        userId,
+        templateId: preset.id,
+      });
+
+      if (!result.success) {
+        // 실패해도 페이지 이동 (페이지에서 다시 시도)
+        router.push(
+          `/timer/phase-inprogress?time=${preset.defaultTime}&title=${encodeURIComponent(preset.title)}&color=${encodeURIComponent(preset.color)}&emoji=${encodeURIComponent(preset.emoji || '')}&templateId=${preset.id}`,
+        );
+        return;
+      }
+
+      // 성공 시 phaseId와 함께 페이지 이동
+      router.push(
+        `/timer/phase-inprogress?phaseId=${result.data.id}&time=${preset.defaultTime}&title=${encodeURIComponent(preset.title)}&color=${encodeURIComponent(preset.color)}&emoji=${encodeURIComponent(preset.emoji || '')}&templateId=${preset.id}`,
+      );
+    } catch {
+      // 에러 발생 시에도 페이지 이동 (페이지에서 다시 시도)
+      router.push(
+        `/timer/phase-inprogress?time=${preset.defaultTime}&title=${encodeURIComponent(preset.title)}&color=${encodeURIComponent(preset.color)}&emoji=${encodeURIComponent(preset.emoji || '')}&templateId=${preset.id}`,
+      );
+    }
+  };
+
+  const handleTimeClick = (templateId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingTemplateId(templateId);
+    setTimeInput('');
+  };
+
+  const handleTimeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, ''); // 숫자만 허용
+    setTimeInput(value);
+  };
+
+  const handleTimeInputSubmit = () => {
+    if (!timeInput || !editingTemplateId) {
+      setEditingTemplateId(null);
+      setTimeInput('');
+      return;
+    }
+
+    const seconds = parseTimeInput(timeInput);
+    if (seconds > 0) {
+      updateMutation.mutate({
+        templateId: editingTemplateId,
+        data: { defaultTime: seconds },
+      });
+    }
+    setEditingTemplateId(null);
+    setTimeInput('');
+  };
+
+  const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleTimeInputSubmit();
+    } else if (e.key === 'Escape') {
+      setEditingTemplateId(null);
+      setTimeInput('');
+    }
+  };
+
+  // 편집 모드 활성화 시 input에 focus
+  useEffect(() => {
+    if (editingTemplateId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editingTemplateId]);
 
   return (
     <>
-      {/* Timer Dialog */}
-      <Dialog open={showTimer} onOpenChange={setShowTimer}>
-        <DialogContent className='max-h-[90vh] overflow-y-auto border-[#1f1f1f] sm:max-w-md'>
-          <DialogTitle className='sr-only'>
-            {selectedPreset?.title || '타이머'}
-          </DialogTitle>
-          <DialogDescription className='sr-only'>
-            목표 시간을 설정하고 타이머를 시작하세요
-          </DialogDescription>
-          {selectedPreset && (
-            <Timer
-              userId={userId}
-              initialTime={selectedPreset.defaultTime}
-              goalTitle={selectedPreset.title}
-              color={selectedPreset.color}
-              onClose={() => setShowTimer(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Add Timer Dialog */}
       <AddTimerDialog
         open={showAddDialog}
@@ -151,25 +203,63 @@ export default function TimerList({ userId }: TimerProps) {
         onAdd={handleAddPreset}
       />
 
-      <div className='mx-auto max-w-md space-y-4'>
+      <div className='mx-auto max-w-2xl space-y-4'>
+        {/* Loading State */}
+        {isLoading && (
+          <div className='py-8 text-center text-muted-foreground'>
+            로딩 중...
+          </div>
+        )}
+
         {/* Timer List */}
+
         <div className='space-y-3'>
-          {goalPresets.map((preset) => (
-            <div
-              key={preset.id}
-              className='flex items-center gap-3 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] p-4 transition-colors hover:border-[#2f2f2f]'
-            >
+          {!isLoading &&
+            goalPresets &&
+            goalPresets.map((preset) => (
               <div
-                className='h-10 w-10 rounded-full'
-                style={{ backgroundColor: preset.color }}
-              />
-              <div className='flex-1'>
-                <div className='font-medium'>{preset.title}</div>
-                <div className='text-sm text-gray-400'>
-                  {formatTime(preset.defaultTime)}
+                key={preset.id}
+                className='flex items-center gap-3 rounded-2xl border p-4 transition-colors hover:bg-accent/50'
+              >
+                <div className='flex-1 space-y-2'>
+                  <div
+                    className='inline-block rounded-md px-3 py-1 text-sm font-medium'
+                    style={{
+                      backgroundColor: `${preset.color}20`,
+                      color: preset.color,
+                      border: `1px solid ${preset.color}40`,
+                    }}
+                  >
+                    {preset.title}
+                  </div>
+                  {preset.note && (
+                    <div className='flex items-center gap-1 text-sm text-muted-foreground'>
+                      <StickyNote className='h-4 w-4' />
+                      <span>{preset.note}</span>
+                    </div>
+                  )}
+                  {editingTemplateId === preset.id ? (
+                    <input
+                      ref={inputRef}
+                      type='text'
+                      inputMode='numeric'
+                      value={formatInputAsTime(timeInput)}
+                      onChange={handleTimeInputChange}
+                      onBlur={handleTimeInputSubmit}
+                      onKeyDown={handleTimeInputKeyDown}
+                      placeholder='00:00'
+                      className='w-20 bg-transparent text-sm text-gray-400 outline-none'
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <div
+                      className='cursor-pointer text-sm text-gray-400 transition-colors hover:text-[#22c55e]'
+                      onClick={(e) => handleTimeClick(preset.id, e)}
+                    >
+                      {formatTime(preset.defaultTime)}
+                    </div>
+                  )}
                 </div>
-              </div>
-              <>
                 {isEdit ? (
                   <Button
                     size='icon'
@@ -182,15 +272,17 @@ export default function TimerList({ userId }: TimerProps) {
                 ) : (
                   <Button
                     size='icon'
-                    onClick={() => handlePlayClick(preset)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePlayClick(preset);
+                    }}
                     className='h-10 w-10 rounded-full bg-[#22c55e] text-black hover:bg-[#22c55e]/90'
                   >
                     <Play className='h-5 w-5' fill='currentColor' />
                   </Button>
                 )}
-              </>
-            </div>
-          ))}
+              </div>
+            ))}
         </div>
       </div>
 

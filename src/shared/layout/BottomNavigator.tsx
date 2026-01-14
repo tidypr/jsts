@@ -1,7 +1,14 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, TrendingUp, Timer, Users, User } from 'lucide-react';
+import {
+  Home,
+  TrendingUp,
+  Timer,
+  Users,
+  User,
+  ClipboardList,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /**
@@ -21,8 +28,9 @@ interface TabItem {
  */
 const TABS: TabItem[] = [
   { label: '홈', path: '/home', icon: Home },
-  { label: '통계', path: '/stats', icon: TrendingUp },
+  { label: '기록', path: '/record', icon: ClipboardList },
   { label: '타이머', path: '/timer', icon: Timer },
+  { label: '통계', path: '/stats', icon: TrendingUp },
   { label: '소셜', path: '/social', icon: Users },
   { label: '프로필', path: '/profile', icon: User },
 ];
@@ -62,7 +70,7 @@ export default function BottomNavigator(): JSX.Element {
 
   return (
     <nav
-      className='fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-border px-4 py-3 opacity-100'
+      className='bg-background/99 fixed bottom-0 left-0 z-50 flex w-full items-center justify-around border-t border-border px-4 py-3 backdrop-blur-sm supports-[backdrop-filter]:bg-background/95'
       data-testid='bottom-navigator'
     >
       {TABS.map((tab) => {

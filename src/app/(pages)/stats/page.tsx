@@ -1,18 +1,17 @@
 import { auth } from '@/auth';
-import StatsPage from '@/client-pages/stats/page';
-
 import { redirect } from 'next/dist/client/components/navigation';
+import StatsPage from './StatsPage';
 
-export default async function page() {
+export default async function Stats() {
   const session = await auth();
 
-  if (!session?.accessToken) {
+  if (!session?.user?.id) {
     redirect('/auth/login');
   }
 
   return (
     <>
-      <StatsPage />
+      <StatsPage userId={session.user.id} />
     </>
   );
 }

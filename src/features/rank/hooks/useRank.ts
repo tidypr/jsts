@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getRankAction } from '../getRank.action';
+import { getRankAction } from '../actions/getRank.action';
 import { GetRankInput, RankPeriod } from '../rankSchema';
 
 export function useRank(period: RankPeriod = 'weekly', category?: string) {
@@ -11,7 +11,7 @@ export function useRank(period: RankPeriod = 'weekly', category?: string) {
       const input: GetRankInput = {
         period,
         category,
-        limit: 10,
+        limit: 20, // 상위 20명 표시
       };
 
       const result = await getRankAction(input);
@@ -20,7 +20,11 @@ export function useRank(period: RankPeriod = 'weekly', category?: string) {
         throw new Error(result.error);
       }
 
-      return result.data;
+      return {
+        ranks: result.data.ranks,
+        myRank: result.data.myRank,
+        period: result.data.period,
+      };
     },
     // 5분간 캐시 유지
     staleTime: 5 * 60 * 1000,

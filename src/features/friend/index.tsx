@@ -18,6 +18,7 @@ import { useSentRequests } from './hooks/useSentRequests';
 import { useSendFriendRequest } from './hooks/useSendFriendRequest';
 import { useRespondFriendRequest } from './hooks/useRespondFriendRequest';
 import { useDeleteFriend } from './hooks/useDeleteFriend';
+import { toast } from 'sonner';
 
 interface FriendProps {
   userId?: string;
@@ -60,7 +61,7 @@ export default function Friend({ userId }: FriendProps) {
    */
   const onSubmitRequest = (data: SendFriendRequestInput) => {
     if (!userId) {
-      alert('로그인이 필요합니다.');
+      toast.error('로그인이 필요합니다.');
       return;
     }
 
@@ -68,11 +69,11 @@ export default function Friend({ userId }: FriendProps) {
       { ...data, userId },
       {
         onSuccess: () => {
-          alert('친구 요청을 보냈습니다.');
+          toast.success('친구 요청을 보냈습니다.');
           reset();
         },
         onError: (error) => {
-          alert(error.message || '친구 요청 중 오류가 발생했습니다.');
+          toast.error(error.message || '친구 요청 중 오류가 발생했습니다.');
         },
       },
     );
@@ -88,10 +89,10 @@ export default function Friend({ userId }: FriendProps) {
       { requestId, userId, accept: true },
       {
         onSuccess: () => {
-          alert('친구 요청을 수락했습니다.');
+          toast.success('친구 요청을 수락했습니다.');
         },
         onError: (error) => {
-          alert(error.message || '요청 수락 중 오류가 발생했습니다.');
+          toast.error(error.message || '요청 수락 중 오류가 발생했습니다.');
         },
       },
     );
@@ -107,10 +108,10 @@ export default function Friend({ userId }: FriendProps) {
       { requestId, userId, accept: false },
       {
         onSuccess: () => {
-          alert('친구 요청을 거절했습니다.');
+          toast.success('친구 요청을 거절했습니다.');
         },
         onError: (error) => {
-          alert(error.message || '요청 거절 중 오류가 발생했습니다.');
+          toast.error(error.message || '요청 거절 중 오류가 발생했습니다.');
         },
       },
     );
@@ -127,10 +128,10 @@ export default function Friend({ userId }: FriendProps) {
         { friendId, userId },
         {
           onSuccess: () => {
-            alert('친구를 삭제했습니다.');
+            toast.success('친구를 삭제했습니다.');
           },
           onError: (error) => {
-            alert(error.message || '친구 삭제 중 오류가 발생했습니다.');
+            toast.error(error.message || '친구 삭제 중 오류가 발생했습니다.');
           },
         },
       );
@@ -150,10 +151,6 @@ export default function Friend({ userId }: FriendProps) {
   return (
     <div className='min-h-screen pb-8 pt-6'>
       <div className='mx-auto max-w-2xl space-y-6'>
-        <div className='flex items-center justify-center'>
-          <h1 className='text-xl font-bold'>친구 관리</h1>
-        </div>
-
         <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {/* 친구 목록 탭 */}
@@ -312,7 +309,7 @@ export default function Friend({ userId }: FriendProps) {
                   type='email'
                   {...register('friendEmail')}
                   placeholder='friend@example.com'
-                  className='border-[#1f1f1f]'
+                  className=''
                   data-testid='friend-email-input'
                 />
                 {errors.friendEmail && (

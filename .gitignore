@@ -51,3 +51,4 @@ node_modules/
 # others
 **/.env
 src/shared/lib/prisma/generated
+**/docs

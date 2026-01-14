@@ -1,9 +1,5 @@
-import SigninPage from '@/client-pages/auth/login/page';
+import SigninPage from './SigninPage';
 
-export default async function page() {
-  return (
-    <>
-      <SigninPage />
-    </>
-  );
+export default async function Login() {
+  return <SigninPage />;
 }

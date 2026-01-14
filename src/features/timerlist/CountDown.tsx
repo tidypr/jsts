@@ -5,7 +5,7 @@ export default function CountDown({
 }: {
   handleConfirm: () => void;
 }) {
-  const [countDown, setCountDown] = useState(1000);
+  const [countDown, setCountDown] = useState(10);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -18,7 +18,7 @@ export default function CountDown({
   }, []);
 
   useEffect(() => {
-    if (countDown === 1) {
+    if (countDown === 0) {
       handleConfirm();
     }
   }, [countDown, handleConfirm]);
@@ -26,7 +26,7 @@ export default function CountDown({
   return (
     <>
       <span className='flex justify-end text-end text-sm text-muted-foreground'>
-        {`${countDown}초 후 자동 저장됩니다.`}
+        {`${countDown}초 후 자동으로 타이머 목록으로 이동합니다.`}
       </span>
     </>
   );

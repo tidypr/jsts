@@ -16,9 +16,9 @@ export const postStatsSchema = z.object({
 
 // 게시물 스키마
 export const postSchema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   author: postAuthorSchema,
-  category: z.string(),
+  category: z.string().optional(),
   title: z.string(),
   content: z.string(),
   tags: z.array(z.string()),
@@ -33,9 +33,14 @@ export type PostStats = z.infer<typeof postStatsSchema>;
 
 // 게시물 작성 폼 스키마
 export const createPostFormSchema = z.object({
-  title: z.string().min(1, '제목을 입력하세요').max(100, '제목은 100자 이하로 입력하세요'),
-  content: z.string().min(1, '내용을 입력하세요').max(1000, '내용은 1000자 이하로 입력하세요'),
-  category: z.string().min(1, '카테고리를 선택하세요'),
+  title: z
+    .string()
+    .min(1, '제목을 입력하세요')
+    .max(100, '제목은 100자 이하로 입력하세요'),
+  content: z
+    .string()
+    .min(1, '내용을 입력하세요')
+    .max(1000, '내용은 1000자 이하로 입력하세요'),
   tags: z.string().optional(),
   image: z.string().optional(),
 });
@@ -47,9 +52,9 @@ export const createPostInputSchema = z.object({
   userId: z.string(),
   title: z.string(),
   content: z.string(),
-  category: z.string(),
   tags: z.array(z.string()),
   image: z.string().optional(),
+  phaseId: z.string().optional(),
 });
 
 export type CreatePostInput = z.infer<typeof createPostInputSchema>;

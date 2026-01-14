@@ -1,18 +1,18 @@
 import { auth } from '@/auth';
-import Social from '@/client-pages/social/page';
-
 import { redirect } from 'next/dist/client/components/navigation';
 
-export default async function SocialPage() {
+import SocialPage from './SocialPage';
+
+export default async function Social() {
   const session = await auth();
 
-  if (!session?.accessToken) {
+  if (!session?.user?.id) {
     redirect('/auth/login');
   }
 
   return (
     <>
-      <Social session={session} />
+      <SocialPage session={session} />
     </>
   );
 }

@@ -14,8 +14,8 @@ export default function Tabs({
   setActiveTab: React.Dispatch<React.SetStateAction<string>>;
 }) {
   return (
-    <div className='sticky top-0 z-10 mx-auto max-w-md pb-4 pt-14 transition-all duration-300'>
-      <div className='flex gap-2 rounded-full bg-muted p-1.5'>
+    <div className='sticky top-0 z-10 mx-auto max-w-md py-2 transition-all duration-300'>
+      <div className='flex gap-2 rounded-full bg-muted p-1'>
         {tabs.map((tab) => (
           <button
             disabled={disabled}

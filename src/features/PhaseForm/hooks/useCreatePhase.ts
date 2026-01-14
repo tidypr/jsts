@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPhaseAction } from '../createPhase.action';
+import { createPhaseAction } from '../actions/createPhase.action';
 import { CreatePhaseInput } from '../phaseSchema';
 
 export function useCreatePhase() {

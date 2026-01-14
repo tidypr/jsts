@@ -1,11 +1,11 @@
 import { auth } from '@/auth';
-import TimerPage from '@/client-pages/timer/page';
+import TimerPage from './TimerPage';
 import { redirect } from 'next/dist/client/components/navigation';
 
-export default async function page() {
+export default async function Timer() {
   const session = await auth();
 
-  if (!session?.accessToken) {
+  if (!session?.user?.id) {
     redirect('/auth/login');
   }
 

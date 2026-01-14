@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPostAction } from '../createPost.action';
+import { createPostAction } from '../actions/createPost.action';
 import { CreatePostInput } from '../feedSchema';
 
 /**

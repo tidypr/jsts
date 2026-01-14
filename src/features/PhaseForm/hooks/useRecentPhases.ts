@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getRecentPhasesAction } from '../getPhases.action';
+import { getRecentPhasesAction } from '../actions/getPhases.action';
 
 export function useRecentPhases(userId: string, limit: number = 3) {
   return useQuery({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toggleLikeAction } from '../createPost.action';
+import { toggleLikeAction } from '../actions/createPost.action';
 
 interface ToggleLikeInput {
   postId: number;
